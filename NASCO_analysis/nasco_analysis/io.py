@@ -11,17 +11,15 @@ from datetime import datetime
 from kisa_rev import apply_kisa_test
 
 class make_data_array():
-    def __init__(self, path_to_data, path_to_kisa_param, xFFTS_Data_topic, IF):
+    def __init__(self, path_to_data, path_to_kisa_param, xFFTS_Data_topic):
         
         self.topic = xFFTS_Data_topic
         self.path = path_to_data
-        self.IF = IF
         self.path_to_kisa_param = path_to_kisa_param
 
     def get_data_array(self):
         path = self.path
         topic = self.topic
-        IF = self.IF
 
         db = necstdb.opendb(path)
         xFFTS_data = db.open_table(topic).read(astype='array')
@@ -152,17 +150,17 @@ class make_data_array():
 
         return self.l_list, self.b_list, self.ra_list, self.dec_list
 
-    def make_data_array(raw_array, l_list, b_list, ra_list, dec_list, IF):
+    def make_data_array(self):
         data_array = xr.DataArray(
-            np.array(raw_array), 
+            np.array(self.raw_array), 
             dims=['t', 'spectral_data'],
-            coords={'t':raw_array['t'],
-               'obsmode':('t',np.array(raw_array['obsmode'])),
-               'scan_num':('t', np.array(raw_array['scan_num'])),
-               'l_list':('t', l_list),
-               'b_list':('t', b_list),
-               'ra_list':('t', ra_list),
-               'dec_list':('t',dec_list)}
+            coords={'t':self.raw_array['t'],
+               'obsmode':('t',np.array(self.raw_array['obsmode'])),
+               'scan_num':('t', np.array(self.raw_array['scan_num'])),
+               'l_list':('t', self.l_list),
+               'b_list':('t', self.b_list),
+               'ra_list':('t', self.ra_list),
+               'dec_list':('t', self.dec_list)}
         )
 
         self.data_array = data_array
