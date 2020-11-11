@@ -1,3 +1,2 @@
 __version__ = '0.1.0'
-
-from core.py import *       
+from NASCO_analysis import *       
