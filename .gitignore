@@ -26,7 +26,10 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+
+# Code
 .vscode/
+*.code-workspace
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -128,3 +131,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Mac
+.DS_Store
