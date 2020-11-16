@@ -66,10 +66,7 @@ class make_data_array():
 
     def apply_kisa(self):
 
-        delta_az_el = [apply_kisa_test(np.deg2rad(az), np.deg2rad(el), self.path_to_kisa_param) for az, el in zip(az_array.values, el_array.values)]    
-        kisa_param = np.array(delta_az_el).T
-        delta_az = kisa_param[0]/3600
-        delta_el = kisa_param[1]/3600
+        d_az, d_el = apply_kisa_test(azel=(az_array, el_array), hosei=self.path_to_kisa_param)
 
         kisa_applyed_az = az_array + delta_az
         kisa_applyed_el = el_array + delta_el
@@ -98,8 +95,8 @@ class make_data_array():
 
         reindexed_scannum_array = self.obsmode_array.reindex(t=self.spec_array['t'], method='pad')
         reindexed_obsmode_array = self.obsmode_array_int.interp_like(self.spec_array)
-        reindexed_encoder_az_array = self.az_array.interp_like(self.spec_array)
-        reindexed_encoder_el_array = self.el_array.interp_like(self.spec_array)
+        reindexed_encoder_az_array = self.kisa_applyed_az.interp_like(self.spec_array)
+        reindexed_encoder_el_array = self.kisa_applyed_el.interp_like(self.spec_array)
 
         del obsmode_array
         del az_array
