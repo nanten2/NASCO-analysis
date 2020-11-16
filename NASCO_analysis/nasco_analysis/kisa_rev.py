@@ -2,12 +2,29 @@
 # date 2020/11/11
 
 import numpy as np 
+from astropy.coordinates import SkyCoord
+import xarray as xr
 
-def apply_kisa_test(azellist, hosei):
+def apply_kisa_test(azel, hosei):
 
-    az = azellist.az.rad
-    el = azellist.az.rad
+    if isinstance(azel, SkyCoord):
 
+        az = azel.az.rad
+        el = azel.az.rad
+
+    elif isinstance(azel, tuple):
+
+        if isinstance(azel[0], np.ndarray):
+            az = azel[0]
+            el = azel[1]
+
+        if isinstance(azel[0], xr.DataArray):
+            az = azel[0].values
+            el = azel[1].values
+
+    else:
+        raise(ValueError('Input must be a Skycoord or a tuple of ndarray or xarray'))
+            
     with open(hosei, 'r') as f:
         kisa = f.read().splitlines()
     kisa = [float(n) for n in kisa]
