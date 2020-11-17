@@ -100,7 +100,7 @@ class make_data_array():
         raw_array = xr.DataArray(
             np.array(self.spec_array),
             dims=['t', 'spectral_data'],
-            coords={'t':spec_array['t'],
+            coords={'t':self.spec_array['t'],
                 
                'obsmode':('t',np.array(reindexed_obsmode_array)),
                'scan_num':('t', np.array(reindexed_scannum_array['scan_num'])),
