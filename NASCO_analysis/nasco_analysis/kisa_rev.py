@@ -15,15 +15,15 @@ def apply_kisa_test(azel, hosei):
     elif isinstance(azel, tuple):
 
         if isinstance(azel[0], np.ndarray):
-            az = azel[0]
-            el = azel[1]
+            az = np.deg2rad(azel[0])
+            el = np.deg2rad(azel[1])
 
         if isinstance(azel[0], xr.DataArray):
-            az = azel[0].values
-            el = azel[1].values
+            az = np.deg2rad(azel[0].values)
+            el = np.deg2rad(azel[1].values)
 
     else:
-        raise(ValueError('Input must be a Skycoord or a tuple of ndarray or xarray'))
+        raise(TypeError('Input must be a Skycoord or a tuple of ndarray or xarray'))
             
     with open(hosei, 'r') as f:
         kisa = f.read().splitlines()
