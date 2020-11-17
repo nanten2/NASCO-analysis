@@ -90,7 +90,7 @@ class make_data_array():
                 pass
             obsmode_number_array.append(mode_number)
 
-        obsmode_array_int = xr.DataArray(np.array(obsmode_number_array),dims=['t'],coords={'t':self.obsmode_array['t']})
+        self.obsmode_array_int = xr.DataArray(np.array(obsmode_number_array),dims=['t'],coords={'t':self.obsmode_array['t']})
 
         reindexed_scannum_array = self.obsmode_array.reindex(t=self.spec_array['t'], method='pad')
         reindexed_obsmode_array = self.obsmode_array_int.interp_like(self.spec_array)
