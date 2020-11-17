@@ -86,5 +86,4 @@ def v_obs(obstime, target_ra, target_dec):
 
 
 if __name__ == "__main__":
-    import doctest
-    doctest.testmod(verbose=True)
+    pass
