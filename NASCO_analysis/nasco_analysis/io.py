@@ -97,9 +97,6 @@ class make_data_array():
         reindexed_encoder_az_array = self.kisa_applyed_az.interp_like(self.spec_array)
         reindexed_encoder_el_array = self.kisa_applyed_el.interp_like(self.spec_array)
 
-        del obsmode_array
-        del az_array
-        del el_array
         raw_array = xr.DataArray(
             np.array(spec_array),
             dims=['t', 'spectral_data'],
