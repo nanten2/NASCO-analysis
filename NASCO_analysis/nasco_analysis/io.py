@@ -98,7 +98,7 @@ class make_data_array():
         reindexed_encoder_el_array = self.kisa_applyed_el.interp_like(self.spec_array)
 
         raw_array = xr.DataArray(
-            np.array(spec_array),
+            np.array(self.spec_array),
             dims=['t', 'spectral_data'],
             coords={'t':spec_array['t'],
                 
