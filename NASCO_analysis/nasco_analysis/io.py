@@ -67,8 +67,8 @@ class make_data_array():
 
         d_az, d_el = apply_kisa_test(azel=(self.az_array, self.el_array), hosei=self.path_to_kisa_param)
 
-        kisa_applyed_az = self.az_array + d_az
-        kisa_applyed_el = self.el_array + d_el
+        kisa_applyed_az = self.az_array + d_az/3600
+        kisa_applyed_el = self.el_array + d_el/3600
 
         self.kisa_applyed_az = kisa_applyed_az
         self.kisa_applyed_el = kisa_applyed_el
@@ -113,6 +113,7 @@ class make_data_array():
         self.raw_array = raw_array
 
         return raw_array
+
     def get_lb(self):
     
         time = [datetime.utcfromtimestamp(t) for t in np.array(self.raw_array['t'])]
