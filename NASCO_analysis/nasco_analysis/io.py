@@ -35,7 +35,6 @@ class make_data_array():
         )
 
         obsmode_array = xr.DataArray(
-
             obsmode['obs_mode'],
             dims = ['t'],
             coords={'t':obsmode['received_time'], 'scan_num':('t', obsmode['scan_num'])}
@@ -43,7 +42,7 @@ class make_data_array():
         )
 
         az_array = xr.DataArray(
-        
+
             enc['enc_az']/3600, 
             dims=['t'],
             coords={'t':enc['timestamp']}
@@ -66,7 +65,7 @@ class make_data_array():
 
     def apply_kisa(self):
 
-        d_az, d_el = apply_kisa_test(azel=(az_array, el_array), hosei=self.path_to_kisa_param)
+        d_az, d_el = apply_kisa_test(azel=(self.az_array, self.el_array), hosei=self.path_to_kisa_param)
 
         kisa_applyed_az = self.az_array + d_az
         kisa_applyed_el = self.el_array + d_el
