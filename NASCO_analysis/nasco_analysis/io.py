@@ -68,8 +68,8 @@ class make_data_array():
 
         d_az, d_el = apply_kisa_test(azel=(az_array, el_array), hosei=self.path_to_kisa_param)
 
-        kisa_applyed_az = az_array + d_az
-        kisa_applyed_el = el_array + d_el
+        kisa_applyed_az = self.az_array + d_az
+        kisa_applyed_el = self.el_array + d_el
 
         self.kisa_applyed_az = kisa_applyed_az
         self.kisa_applyed_el = kisa_applyed_el
