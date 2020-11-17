@@ -134,3 +134,6 @@ dmypy.json
 
 # Mac
 .DS_Store
+
+# Unix process
+nohup.out
