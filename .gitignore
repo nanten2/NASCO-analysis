@@ -137,3 +137,6 @@ dmypy.json
 
 # Unix process
 nohup.out
+
+# Directry for try and error
+try_and_error/
