@@ -15,8 +15,8 @@ def apply_kisa_test(azel, hosei):
     elif isinstance(azel, tuple):
 
         if isinstance(azel[0], np.ndarray):
-            az = np.deg2rad(azel[0])
-            el = np.deg2rad(azel[1])
+            az = np.deg2rad(azel[0]) 
+            el = np.deg2rad(azel[1]) 
 
         if isinstance(azel[0], xr.DataArray):
             az = np.deg2rad(azel[0].values)
