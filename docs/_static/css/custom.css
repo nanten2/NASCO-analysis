@@ -1,0 +1,17 @@
+.custom
+{
+    border-color: #c8c8c8 ;
+    border-style: solid ;
+    border-width: 1px ;
+    font-size: x-small ;
+    font-style: italic ;
+    margin-left: auto ;
+    margin-right: auto ;
+    padding: 3px 2em ;
+}
+.wy-nav-side {
+    background: #004e4e;
+}
+.wy-nav-content-wrap {
+    background: #fffaeb
+}
