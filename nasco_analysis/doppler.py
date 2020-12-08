@@ -259,7 +259,7 @@ class Doppler(object):
 
         # calculate V_obs
         v_obs = SkyCoord(
-            LOC_NANTEN2.get_gcrs(self.obstime)
+            self.LOC_NANTEN2.get_gcrs(self.obstime)
         ).transform_to(
             LSR(v_bary=v_bary)
         ).velocity
