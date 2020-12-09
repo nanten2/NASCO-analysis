@@ -6,10 +6,11 @@ import astropy.time
 import xarray as xr
 import necstdb
 from datetime import datetime
-from nasco_analysis.kisa_rev import apply_kisa_test
+
+from .kisa_rev import apply_kisa_test
 
 
-class initial_array(object):
+class Initial_array(object):
     def __init__(self, path_to_data, path_to_kisa_param, xFFTS_Data_topic):
 
         self.topic = xFFTS_Data_topic
