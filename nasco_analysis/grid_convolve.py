@@ -2,14 +2,14 @@ import numpy as np
 import xarray as xr
 import astropy.units as u
 from astropy.units.quantity import Quantity
-from .io import make_data_array
+from .io import Initial_array
 from tqdm import tqdm
 
 
-class Array_to_map(make_data_array):
+class Array_to_map(Initial_array):
     def __init__(self, path_to_basefitted_netcdf):
 
-        super(make_data_array, self).__init__()
+        super(Initial_array, self).__init__()
         data = xr.open_dataarray(path_to_basefitted_netcdf)
         self.data = data
 
