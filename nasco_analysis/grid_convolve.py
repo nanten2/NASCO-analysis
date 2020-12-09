@@ -44,7 +44,6 @@ class Array_to_map(make_data_array):
         grid_size_deg = grid_size.to(u.deg).value
         map_center = np.array(
             [map_center[0].to(u.deg).value, map_center[1].to(u.deg).value]
-        )
 
         lon_coords = np.linspace(
             map_center[0] - grid_size_deg * grid_number / 2,
