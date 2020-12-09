@@ -170,7 +170,7 @@ class Doppler(object):
 
         Returns
         -------
-        numpy.array(astropy.units.quantity.Quantity)
+        list of astropy.units.quantity.Quantity
             V_LSR for each channel.
 
         Notes
@@ -270,6 +270,7 @@ class Doppler(object):
             v_obs.d_z * np.sin(target.icrs.dec)
 
         return v_correction
+
 
 if __name__ == '__main__':
     # import doctest
