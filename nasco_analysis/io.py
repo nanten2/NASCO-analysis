@@ -6,7 +6,8 @@ import astropy.time
 import xarray as xr
 import necstdb
 from datetime import datetime
-from kisa_rev import apply_kisa_test
+
+from .kisa_rev import apply_kisa_test
 
 
 class Initial_array(object):
