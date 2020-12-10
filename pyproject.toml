@@ -17,6 +17,7 @@ necstdb = "^0.2.3"
 spectral-cube = "^0.5.0"
 jupyter = "^1.0.0"
 tqdm = "^4.51.0"
+jupyterlab = "^2.2.9"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
