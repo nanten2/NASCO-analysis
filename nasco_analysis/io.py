@@ -55,6 +55,44 @@ class Initial_array(object):
 
         return spec_array, obsmode_array, az_array, el_array
 
+    def get_tp_array(self):
+        path = self.path
+        topic = self.topic
+
+        db = necstdb.opendb(path)
+        xFFTS_data = db.open_table(topic).read(astype="array")
+        obsmode = db.open_table("obsmode").read(astype="array")
+        enc = db.open_table("status_encoder").read(astype="array")
+
+        tp_array = xr.DataArray(
+            xFFTS_data["tp"],
+            dims=["t"],
+            coords={"t": xFFTS_data["timestamp"]},
+        )
+
+        obsmode_array = xr.DataArray(
+            obsmode["obs_mode"],
+            dims=["t"],
+            coords={
+                "t": obsmode["received_time"],
+                "scan_num": ("t", obsmode["scan_num"]),
+            },
+        )
+
+        az_array = xr.DataArray(
+            enc["enc_az"] / 3600, dims=["t"], coords={"t": enc["timestamp"]}
+        )
+
+        el_array = xr.DataArray(
+            enc["enc_el"] / 3600, dims=["t"], coords={"t": enc["timestamp"]}
+        )
+        self.tp_array = tp_array
+        self.obsmode_array = obsmode_array
+        self.az_array = az_array
+        self.el_array = el_array
+
+        return tp_array, obsmode_array, az_array, el_array
+
     def apply_kisa(self):
 
         d_az, d_el = apply_kisa_test(
