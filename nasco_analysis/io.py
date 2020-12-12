@@ -150,7 +150,7 @@ class Initial_array(object):
 
     def get_lb(self):
 
-        time = [datetime.utcfromtimestamp(t) for t in np.array(self.raw_array["t"])]
+        time = [datetime.utcfromtimestamp(t) for t in np.array(self.data_array["t"])]
 
         location = astropy.coordinates.EarthLocation(
             lon=-67.70308139 * u.deg, lat=-22.96995611 * u.deg, height=4863.85 * u.m
