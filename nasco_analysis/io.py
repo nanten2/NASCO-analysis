@@ -150,15 +150,17 @@ class Initial_array(object):
 
     def get_lb(self):
 
-        time = [datetime.utcfromtimestamp(t) for t in np.array(self.data_array["t"])]
+        time = [
+            datetime.utcfromtimestamp(t) for t in np.array(self.concatenated_array["t"])
+        ]
 
         location = astropy.coordinates.EarthLocation(
             lon=-67.70308139 * u.deg, lat=-22.96995611 * u.deg, height=4863.85 * u.m
         )
 
         AltAzcoordiantes = astropy.coordinates.SkyCoord(
-            az=self.raw_array["azlist"],
-            alt=self.raw_array["ellist"],
+            az=self.concatenated_array["azlist"],
+            alt=self.concatenated_array["ellist"],
             frame="altaz",
             obstime=time,
             location=location,
