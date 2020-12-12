@@ -131,7 +131,7 @@ class Initial_array(object):
         )
 
         reindexed_scannum_array = self.obsmode_array.reindex(
-            t=self.spec_array["t"], method="pad"
+            t=self.data_array["t"], method="pad"
         )
         reindexed_obsmode_array = self.obsmode_array_int.interp_like(self.spec_array)
         reindexed_encoder_az_array = self.kisa_applyed_az.interp_like(self.spec_array)
