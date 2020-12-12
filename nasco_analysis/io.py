@@ -133,9 +133,9 @@ class Initial_array(object):
         reindexed_scannum_array = self.obsmode_array.reindex(
             t=self.data_array["t"], method="pad"
         )
-        reindexed_obsmode_array = self.obsmode_array_int.interp_like(self.spec_array)
-        reindexed_encoder_az_array = self.kisa_applyed_az.interp_like(self.spec_array)
-        reindexed_encoder_el_array = self.kisa_applyed_el.interp_like(self.spec_array)
+        reindexed_obsmode_array = self.obsmode_array_int.interp_like(self.data_array)
+        reindexed_encoder_az_array = self.kisa_applyed_az.interp_like(self.data_array)
+        reindexed_encoder_el_array = self.kisa_applyed_el.interp_like(self.data_array)
 
         concatenated_array = data_array.assign_coords(
             obsmode=("t", reindexed_obsmode_array),
