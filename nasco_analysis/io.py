@@ -65,7 +65,7 @@ class Initial_array(object):
         enc = db.open_table("status_encoder").read(astype="array")
 
         data_array = xr.DataArray(
-            xFFTS_data["tp"],
+            xFFTS_data,
             dims=["t"],
             coords={"t": xFFTS_data["timestamp"]},
         )
