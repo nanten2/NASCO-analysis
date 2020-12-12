@@ -26,7 +26,7 @@ class Initial_array(object):
         obsmode = db.open_table("obsmode").read(astype="array")
         enc = db.open_table("status_encoder").read(astype="array")
 
-        spec_array = xr.DataArray(
+        data_array = xr.DataArray(
             xFFTS_data["spec"],
             dims=["t", "spectral_data"],
             coords={"t": xFFTS_data["timestamp"]},
@@ -48,12 +48,50 @@ class Initial_array(object):
         el_array = xr.DataArray(
             enc["enc_el"] / 3600, dims=["t"], coords={"t": enc["timestamp"]}
         )
-        self.spec_array = spec_array
+        self.data_array = data_array
         self.obsmode_array = obsmode_array
         self.az_array = az_array
         self.el_array = el_array
 
-        return spec_array, obsmode_array, az_array, el_array
+        return data_array, obsmode_array, az_array, el_array
+
+    def get_tp_array(self):
+        path = self.path
+        topic = self.topic
+
+        db = necstdb.opendb(path)
+        xFFTS_data = db.open_table(topic).read(astype="array")
+        obsmode = db.open_table("obsmode").read(astype="array")
+        enc = db.open_table("status_encoder").read(astype="array")
+
+        data_array = xr.DataArray(
+            xFFTS_data,
+            dims=["t"],
+            coords={"t": xFFTS_data["timestamp"]},
+        )
+
+        obsmode_array = xr.DataArray(
+            obsmode["obs_mode"],
+            dims=["t"],
+            coords={
+                "t": obsmode["received_time"],
+                "scan_num": ("t", obsmode["scan_num"]),
+            },
+        )
+
+        az_array = xr.DataArray(
+            enc["enc_az"] / 3600, dims=["t"], coords={"t": enc["timestamp"]}
+        )
+
+        el_array = xr.DataArray(
+            enc["enc_el"] / 3600, dims=["t"], coords={"t": enc["timestamp"]}
+        )
+        self.data_array = data_array
+        self.obsmode_array = obsmode_array
+        self.az_array = az_array
+        self.el_array = el_array
+
+        return data_array, obsmode_array, az_array, el_array
 
     def apply_kisa(self):
 
@@ -70,6 +108,8 @@ class Initial_array(object):
         return kisa_applyed_az, kisa_applyed_el
 
     def concatenate(self):
+
+        data_array = self.data_array
 
         obsmode_number_array = []
         for obsmode in self.obsmode_array:
@@ -91,39 +131,36 @@ class Initial_array(object):
         )
 
         reindexed_scannum_array = self.obsmode_array.reindex(
-            t=self.spec_array["t"], method="pad"
+            t=self.data_array["t"], method="pad"
         )
-        reindexed_obsmode_array = self.obsmode_array_int.interp_like(self.spec_array)
-        reindexed_encoder_az_array = self.kisa_applyed_az.interp_like(self.spec_array)
-        reindexed_encoder_el_array = self.kisa_applyed_el.interp_like(self.spec_array)
+        reindexed_obsmode_array = self.obsmode_array_int.interp_like(self.data_array)
+        reindexed_encoder_az_array = self.kisa_applyed_az.interp_like(self.data_array)
+        reindexed_encoder_el_array = self.kisa_applyed_el.interp_like(self.data_array)
 
-        raw_array = xr.DataArray(
-            np.array(self.spec_array),
-            dims=["t", "spectral_data"],
-            coords={
-                "t": self.spec_array["t"],
-                "obsmode": ("t", np.array(reindexed_obsmode_array)),
-                "scan_num": ("t", np.array(reindexed_scannum_array["scan_num"])),
-                "azlist": ("t", np.array(reindexed_encoder_az_array)),
-                "ellist": ("t", np.array(reindexed_encoder_el_array)),
-            },
+        concatenated_array = data_array.assign_coords(
+            obsmode=("t", reindexed_obsmode_array),
+            scan_num=("t", reindexed_scannum_array),
+            azlist=("t", reindexed_encoder_az_array),
+            ellist=("t", reindexed_encoder_el_array),
         )
 
-        self.raw_array = raw_array
+        self.concatenated_array = concatenated_array
 
-        return raw_array
+        return concatenated_array
 
     def get_lb(self):
 
-        time = [datetime.utcfromtimestamp(t) for t in np.array(self.raw_array["t"])]
+        time = [
+            datetime.utcfromtimestamp(t) for t in np.array(self.concatenated_array["t"])
+        ]
 
         location = astropy.coordinates.EarthLocation(
             lon=-67.70308139 * u.deg, lat=-22.96995611 * u.deg, height=4863.85 * u.m
         )
 
         AltAzcoordiantes = astropy.coordinates.SkyCoord(
-            az=self.raw_array["azlist"],
-            alt=self.raw_array["ellist"],
+            az=self.concatenated_array["azlist"],
+            alt=self.concatenated_array["ellist"],
             frame="altaz",
             obstime=time,
             location=location,
@@ -138,19 +175,13 @@ class Initial_array(object):
         return self.l_list, self.b_list, self.ra_list, self.dec_list
 
     def make_data_array(self):
-        data_array = xr.DataArray(
-            np.array(self.raw_array),
-            dims=["t", "spectral_data"],
-            coords={
-                "t": self.raw_array["t"],
-                "obsmode": ("t", np.array(self.raw_array["obsmode"])),
-                "scan_num": ("t", np.array(self.raw_array["scan_num"])),
-                "l_list": ("t", self.l_list),
-                "b_list": ("t", self.b_list),
-                "ra_list": ("t", self.ra_list),
-                "dec_list": ("t", self.dec_list),
-            },
+
+        initial_processed_array = self.concatenated_array.assign_coords(
+            l_list=("t", self.l_list),
+            b_list=("t", self.b_list),
+            ra_list=("t", self.ra_list),
+            dec_list=("t", self.dec_list),
         )
 
-        self.data_array = data_array
-        return data_array
+        self.initial_processed_array = initial_processed_array
+        return initial_processed_array
