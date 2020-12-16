@@ -275,7 +275,7 @@ class Doppler(object):
             dec=self.dec,
             frame="fk5",
             obstime=self.obstime,
-            location=self.loc_nanten2,
+            location=self.LOC_NANTEN2,
         )
 
         # calculate V_obs
