@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+from functools import wraps
+
 from astropy.coordinates import EarthLocation
 from astropy.coordinates import SkyCoord, CartesianDifferential, LSR
 from astropy.time import Time
@@ -19,6 +21,8 @@ class Doppler(object):
         Spectrometer name, case insensitive. Either ``XFFTS`` or ``AC240`` are supported.
     rest_freq : astropy.units.quantity.Quantity
         Rest frequency of the line spectrum to be evaluated.
+    species : str
+        Name of the observed species; only CO isotopes (12CO_10, 13CO_10, C18O_10, 12CO_21, 13CO_21, C18O_21) are supported.
     LO1st_freq : astropy.units.quantity.Quantity
         Frequency of 1st local oscilator.
     LO1st_factor : int or float
@@ -56,16 +60,24 @@ class Doppler(object):
     <Quantity -36.03406182 km / s>
 
     """
-    __VARS = ['spectrometer', 'rest_freq', 'LO1st_freq', 'LO1st_factor', 'LO2nd_freq', 'obstime', 'ra', 'dec']
+    __VARS = ['spectrometer', 'rest_freq', 'LO1st_freq', 'LO1st_factor', 'LO2nd_freq', 'obstime', 'ra', 'dec', 'species']
     # observatory location
     LOC_NANTEN2 = EarthLocation(
         lon=-67.70308139 * u.deg,
         lat=-22.96995611 * u.deg,
         height=4863.85 * u.m,
     )
+    SPECIES_to_REST_FREQ = {
+        '12co_10': 115.271204 * u.GHz,
+        '13co_10': 110.201353 * u.GHz,
+        'c18o_10': 109.782173 * u.GHz,
+        '12co_21': 230.538 * u.GHz,
+        '13co_21': 220.398681 * u.GHz,
+        'c18o_21': 219.560363 * u.GHz,
+    }
 
     def __init__(self, args=None, **kwargs):
-        # set instance variable
+        # set instance variables
         if args:
             if isinstance(args, dict):
                 kwargs.update(args)
@@ -91,6 +103,14 @@ class Doppler(object):
             else:
                 raise(NameError(f'invalid argument : {key}'))
         return
+    
+    def species2freq(func):
+        @wraps(func)
+        def translate(inst, *args):
+            if hasattr(inst, 'species'):
+                inst.rest_freq = inst.SPECIES_to_REST_FREQ[inst.species.lower()]
+            return func(inst, *args)
+        return translate
 
     def __check_args(self, args):
         """
@@ -117,6 +137,7 @@ class Doppler(object):
             raise AttributeError(f'Parameter {undeclared} is not given. Use `set_args`')
         return
 
+    @species2freq
     def heterodyne(self):
         """Where the line emission will appear.
 
