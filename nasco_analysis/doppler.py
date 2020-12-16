@@ -68,13 +68,14 @@ class Doppler(object):
         height=4863.85 * u.m,
     )
     SPECIES_to_REST_FREQ = {
-        '12co_10': 115.271204 * u.GHz,
+        '12co_10': 115.271202 * u.GHz,
         '13co_10': 110.201353 * u.GHz,
         'c18o_10': 109.782173 * u.GHz,
-        '12co_21': 230.538 * u.GHz,
+        '12co_21': 230.538000 * u.GHz,
         '13co_21': 220.398681 * u.GHz,
-        'c18o_21': 219.560363 * u.GHz,
+        'c18o_21': 219.560354 * u.GHz,
     }
+    # reference: Naomasa Nakai et al. 2009, ISBN978-4-535-60766-8
 
     def __init__(self, args=None, **kwargs):
         # set instance variables
