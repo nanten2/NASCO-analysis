@@ -116,7 +116,7 @@ class Initial_array(object):
             mode_number = np.nan
             if obsmode == b"HOT       ":
                 mode_number = 0.0
-            elif obsmode == b"OFF       ":
+            elif (obsmode == b"OFF       ") or (obsmode == b"SKY       "):
                 mode_number = 1.0
             elif obsmode == b"ON        ":
                 mode_number = 2.0
@@ -139,7 +139,7 @@ class Initial_array(object):
 
         concatenated_array = data_array.assign_coords(
             obsmode=("t", reindexed_obsmode_array),
-            scan_num=("t", reindexed_scannum_array),
+            scan_num=("t", reindexed_scannum_array["scan_num"].values()),
             azlist=("t", reindexed_encoder_az_array),
             ellist=("t", reindexed_encoder_el_array),
         )
