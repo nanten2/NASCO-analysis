@@ -139,7 +139,7 @@ class Initial_array(object):
 
         concatenated_array = data_array.assign_coords(
             obsmode=("t", reindexed_obsmode_array),
-            scan_num=("t", reindexed_scannum_array["scan_num"].values()),
+            scan_num=("t", reindexed_scannum_array["scan_num"].values),
             azlist=("t", reindexed_encoder_az_array),
             ellist=("t", reindexed_encoder_el_array),
         )
