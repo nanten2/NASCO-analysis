@@ -11,7 +11,7 @@ def apply_kisa_test(azel, hosei):
     if isinstance(azel, SkyCoord):
 
         az = azel.az.rad
-        el = azel.az.rad
+        el = azel.alt.rad
 
     elif isinstance(azel, tuple):
 
