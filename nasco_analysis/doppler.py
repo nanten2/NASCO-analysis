@@ -5,7 +5,7 @@ from functools import wraps
 from astropy.coordinates import EarthLocation
 from astropy.coordinates import SkyCoord, CartesianDifferential, LSR
 from astropy.time import Time
-import astropy.constants as constants
+import astropy.constants as const
 import astropy.units as u
 import numpy as np
 
@@ -18,11 +18,13 @@ class Doppler(object):
     Parameters
     ----------
     spectrometer : str
-        Spectrometer name, case insensitive. Either ``XFFTS`` or ``AC240`` are supported.
+        Spectrometer name, case insensitive. Either ``XFFTS`` or
+        ``AC240`` are supported.
     rest_freq : astropy.units.quantity.Quantity
         Rest frequency of the line spectrum to be evaluated.
     species : str
-        Name of the observed species; only CO isotopes (12CO_10, 13CO_10, C18O_10, 12CO_21, 13CO_21, C18O_21) are supported.
+        Name of the observed species; only CO isotopes (12CO_10,
+        13CO_10, C18O_10, 12CO_21, 13CO_21, C18O_21) are supported.
     LO1st_freq : astropy.units.quantity.Quantity
         Frequency of 1st local oscilator.
     LO1st_factor : int or float
@@ -30,7 +32,8 @@ class Doppler(object):
     LO2nd_freq : astropy.units.quantity.Quantity
         Frequency of 2nd local oscilator.
     obstime : float or astropy.units.quantity.Quantity
-        Time the observation is done. If float value is given, it'll be interpreted as UNIX-time.
+        Time the observation is done. If float value is given, it'll be
+        interpreted as UNIX-time.
     ra : astropy.units.quantity.Quantity
         Right ascension of the target body.
     dec : astropy.units.quantity.Quantity
@@ -52,15 +55,16 @@ class Doppler(object):
     >>> dp = Doppler(spectrometer='xffts', rest_freq=230.538*u.GHz, LO1st_freq=18.8*u.GHz, LO1st_factor=12, LO2nd_freq=4*u.GHz)
     >>> dp.heterodyne()
     <Quantity 0.938 GHz>
-    >>> args = {'obstime': Time("2020-05-02T09:58:16.962", format="fits"),\
-                'ra': 146.989193 * u.deg,\
-                'dec': 13.278768 * u.deg}
+    >>> args = {'obstime': Time("2020-05-02T09:58:16.962", format="fits"), 'ra': 146.989193 * u.deg, 'dec': 13.278768 * u.deg}
     >>> dp.set_args(args)
     >>> dp.v_obs()
     <Quantity -36.03406182 km / s>
 
-    """
-    __VARS = ['spectrometer', 'rest_freq', 'LO1st_freq', 'LO1st_factor', 'LO2nd_freq', 'obstime', 'ra', 'dec', 'species']
+    """  # noqa: E501
+    __VARS = [
+        'spectrometer', 'rest_freq', 'LO1st_freq', 'LO1st_factor',
+        'LO2nd_freq', 'obstime', 'ra', 'dec', 'species'
+    ]
     # observatory location
     LOC_NANTEN2 = EarthLocation(
         lon=-67.70308139 * u.deg,
@@ -74,8 +78,8 @@ class Doppler(object):
         '12co_21': 230.538000 * u.GHz,
         '13co_21': 220.398681 * u.GHz,
         'c18o_21': 219.560354 * u.GHz,
+        # reference: Naomasa Nakai et al. 2009, ISBN978-4-535-60766-8
     }
-    # reference: Naomasa Nakai et al. 2009, ISBN978-4-535-60766-8
 
     def __init__(self, args=None, **kwargs):
         # set instance variables
@@ -83,7 +87,7 @@ class Doppler(object):
             if isinstance(args, dict):
                 kwargs.update(args)
             else:
-                raise(TypeError("Arguments must be named. Use kwargs or dict."))
+                raise TypeError("Arguments must be named. Use kwargs or dict.")
         self.set_args(**kwargs)
 
     def set_args(self, args=None, **kwargs):
@@ -102,10 +106,10 @@ class Doppler(object):
             if key in self.__VARS:
                 setattr(self, key, val)
             else:
-                raise(NameError(f'invalid argument : {key}'))
+                raise NameError(f'invalid argument : {key}')
         return
-    
-    def species2freq(func):
+
+    def __species2freq(func):
         @wraps(func)
         def translate(inst, *args):
             if hasattr(inst, 'species'):
@@ -135,14 +139,18 @@ class Doppler(object):
             except AttributeError:
                 undeclared.append(arg)
         if undeclared:
-            raise AttributeError(f'Parameter {undeclared} is not given. Use `set_args`')
+            raise AttributeError(
+                f'Parameter {undeclared} is not given. Use `set_args`'
+            )
         return
 
-    @species2freq
+    @__species2freq
     def heterodyne(self):
         """Where the line emission will appear.
 
-        Spectrometer frequency where the line emission will appear. Since V_obs is not took into account, error of up to ~0.05 GHz is expected. For more precision, use `ch_speed`.
+        Spectrometer frequency where the line emission will appear.
+        Since V_obs is not took into account, error of up to ~0.05 GHz
+        is expected. For more precision, use `ch_speed`.
 
         Returns
         -------
@@ -156,7 +164,8 @@ class Doppler(object):
 
         Notes
         -----
-        Parameters ['spectrometer', 'rest_freq', 'LO1st_freq', 'LO1st_factor', 'LO2nd_freq'] should be given.
+        Parameters ``['spectrometer', 'rest_freq', 'LO1st_freq',
+        'LO1st_factor', 'LO2nd_freq']`` should be given.
 
         Examples
         --------
@@ -164,9 +173,11 @@ class Doppler(object):
         >>> dp.heterodyne()
         <Quantity 0.77 GHz>
 
-        """
+        """  # noqa: E501
         # check if necessary parameters have already been declared
-        __vars = ['spectrometer', 'rest_freq', 'LO1st_freq', 'LO1st_factor', 'LO2nd_freq']
+        __vars = [
+            'spectrometer', 'rest_freq', 'LO1st_freq', 'LO1st_factor', 'LO2nd_freq'
+        ]
         self.__check_args(__vars)
         # set spectrometer constants
         if self.spectrometer.lower() == 'xffts':
@@ -188,7 +199,8 @@ class Doppler(object):
     def ch_speed(self):
         """Speed for each channel.
 
-        Calculate recessional velocity relative to V_LSR for each channel of the spectrometer.
+        Calculate recessional velocity relative to V_LSR for each
+        channel of the spectrometer.
 
         Returns
         -------
@@ -197,7 +209,9 @@ class Doppler(object):
 
         Notes
         -----
-        Parameters ['spectrometer', 'rest_freq', 'LO1st_freq', 'LO1st_factor', 'LO2nd_freq', 'obstime', 'ra', 'dec'] should be given.
+        Parameters ``['spectrometer', 'rest_freq', 'LO1st_freq',
+        'LO1st_factor', 'LO2nd_freq', 'obstime', 'ra', 'dec']`` should
+        be given.
 
         Examples
         --------
@@ -215,7 +229,7 @@ class Doppler(object):
                    -3231.35836405, -3231.51710169, -3231.67583934] km / s>
         """
         spec_freq = self.heterodyne()
-        speed_resolution = -1 * self.band_width / self.rest_freq / self.ch_num * constants.c
+        speed_resolution = -1 * self.band_width / self.rest_freq / self.ch_num * const.c
         v_0GHz = -1 * speed_resolution * spec_freq / (self.band_width / self.ch_num)
         v_base = np.array(range(self.ch_num)) * speed_resolution * self.sideband_factor
         v_apparent = v_base + v_0GHz
@@ -226,8 +240,9 @@ class Doppler(object):
     def v_obs(self):
         """Observer's verocity relative to LSR.
 
-        Calcurate line-of-sight component of observer's velocity relative to
-        LSR due to solar motion, the Earth's rotation and revolution.
+        Calcurate line-of-sight component of observer's velocity
+        relative to LSR due to solar motion, the Earth's rotation and
+        revolution.
 
         Returns
         -------
@@ -250,7 +265,7 @@ class Doppler(object):
         >>> dp.v_obs()
         <Quantity [-36.03406101, -35.32385628] km / s>
 
-        """
+        """  # noqa: E501
         # check if necessary parameters have already been declared
         __vars = ['obstime', 'ra', 'dec']
         self.__check_args(__vars)
@@ -295,6 +310,4 @@ class Doppler(object):
 
 
 if __name__ == '__main__':
-    # import doctest
-    # doctest.testmod(verbose=True)
     pass
