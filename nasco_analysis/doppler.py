@@ -229,8 +229,10 @@ class Doppler(object):
                    -3231.35836405, -3231.51710169, -3231.67583934] km / s>
         """
         spec_freq = self.heterodyne()
+        freq_resolution = self.band_width / self.ch_num
         speed_resolution = -1 * self.band_width / self.rest_freq / self.ch_num * const.c
-        v_0GHz = -1 * speed_resolution * spec_freq / (self.band_width / self.ch_num)
+        v_0GHz = -1 * speed_resolution * spec_freq \
+            / freq_resolution * self.sideband_factor
         v_base = np.array(range(self.ch_num)) * speed_resolution * self.sideband_factor
         v_apparent = v_base + v_0GHz
         v_obs = self.v_obs()
