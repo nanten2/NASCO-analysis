@@ -8,6 +8,7 @@ import necstdb
 from datetime import datetime
 
 from .kisa_rev import apply_kisa_test
+from .doppler import Doppler
 
 
 class Initial_array(object):
@@ -26,27 +27,33 @@ class Initial_array(object):
         obsmode = db.open_table("obsmode").read(astype="array")
         enc = db.open_table("status_encoder").read(astype="array")
 
+        spec_timestamp = [datetime.utcfromtimestamp(t) for t in xFFTS_data["timestamp"]]
+        obsmode_timestamp = [
+            datetime.utcfromtimestamp(t) for t in obsmode["received_time"]
+        ]
+        enc_timestamp = [datetime.utcfromtimestamp(t) for t in enc["timestamp"]]
+
         data_array = xr.DataArray(
             xFFTS_data["spec"],
             dims=["t", "spectral_data"],
-            coords={"t": xFFTS_data["timestamp"]},
+            coords={"t": spec_timestamp},
         )
 
         obsmode_array = xr.DataArray(
             obsmode["obs_mode"],
             dims=["t"],
             coords={
-                "t": obsmode["received_time"],
+                "t": obsmode_timestamp,
                 "scan_num": ("t", obsmode["scan_num"]),
             },
         )
 
         az_array = xr.DataArray(
-            enc["enc_az"] / 3600, dims=["t"], coords={"t": enc["timestamp"]}
+            enc["enc_az"] / 3600, dims=["t"], coords={"t": enc_timestamp}
         )
 
         el_array = xr.DataArray(
-            enc["enc_el"] / 3600, dims=["t"], coords={"t": enc["timestamp"]}
+            enc["enc_el"] / 3600, dims=["t"], coords={"t": enc_timestamp}
         )
         self.data_array = data_array
         self.obsmode_array = obsmode_array
@@ -107,6 +114,14 @@ class Initial_array(object):
 
         return kisa_applyed_az, kisa_applyed_el
 
+    def ch2velo(self, arg_dict):
+
+        dp = Doppler(arg_dict)
+        velo_list = dp.ch_speed()
+
+        self.velo_list = velo_list
+        return velo_list
+
     def concatenate(self):
 
         data_array = self.data_array
@@ -149,10 +164,6 @@ class Initial_array(object):
         return concatenated_array
 
     def get_lb(self):
-
-        time = [
-            datetime.utcfromtimestamp(t) for t in np.array(self.concatenated_array["t"])
-        ]
 
         location = astropy.coordinates.EarthLocation(
             lon=-67.70308139 * u.deg, lat=-22.96995611 * u.deg, height=4863.85 * u.m
