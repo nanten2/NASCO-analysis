@@ -173,7 +173,7 @@ class Initial_array(object):
             az=self.concatenated_array["azlist"],
             alt=self.concatenated_array["ellist"],
             frame="altaz",
-            obstime=time,
+            obstime=self.concatenated_array["t"],
             location=location,
             unit="deg",
         )
