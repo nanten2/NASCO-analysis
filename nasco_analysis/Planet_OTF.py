@@ -57,16 +57,16 @@ def chopper_wheel(on_array, off_array, hot_array):
     
     return calib_array
 
-def make_TP_array(array, law_freq='none', high_freq='none'):
-    if law_freq == 'none':
+def make_total_power_array(array, law_ch_num='none', high_ch_num='none'):
+    if law_ch_num == 'none':
         ON_TP = np.sum(array, axis=1)
-        TP_array = ON_TP * 0.15
+        total_power_array = ON_TP * 0.15
     else:    
-        ON_TP = np.sum(array[:,law_freq:high_freq], axis=1)
-        len_freq = len(array[2])
-        TP_array = ON_TP * len_freq/(high_freq-law_freq) * 0.15
+        ON_TP = np.sum(array[:,law_ch_num:high_ch_num], axis=1)
+        len_ch_num = len(array[2])
+        total_power_array = ON_TP * len_ch_num/(high_ch_num-law_ch_num) * 0.15
         
-    return TP_array
+    return total_power_array
 
 def make_pix_array(array, Num_pix):
     
@@ -76,7 +76,7 @@ def make_pix_array(array, Num_pix):
         height = 4863.85 * u.m)
     
     time_unix_list = np.array(array['t'])
-    time_unix_list_astype = Time(time_unix_list, format='unix')
+    time_unix_list_astype = Time(time_unix_list, format='datetime64')
     jupiter_radec_list = co.get_body('Jupiter', time_unix_list_astype)
     jupiter_radec_list.location = nanten2
     jupiter_azel_list = jupiter_radec_list.transform_to(co.AltAz())
@@ -134,49 +134,55 @@ def convolution(array, Num_pix):
     conved_array = conved_array_.reshape([Num_pix, Num_pix])
     return conved_array
 
-def make_figure(array, Num_pix, law_freq='none', high_freq='none', save='False'):
+def make_figure(array, Num_pix, law_ch_num='none', high_ch_num='none', save='False'):
 
     X, Y = make_grid(Num_pix)
 
     fig = plt.figure(figsize=[14,5])
-    if law_freq == 'none':
+    if law_ch_num == 'none':
         fig.suptitle('Beam pattern', fontsize=18)
     else:
-        fig.suptitle('Beam pattern_freq:' + str(law_freq) + 'to' + str(high_freq), fontsize=18)
+        fig.suptitle('Beam pattern_ch_num:' + str(law_ch_num) + 'to' + str(high_ch_num), fontsize=18)
 
     ax1 = fig.add_subplot(121)
-    cont = ax1.contour(X,Y,array, colors=['black'])
-    map1 = ax1.pcolormesh(X, Y, array)
-    ax1.set_xlabel('daz',fontsize=16)
-    ax1.set_ylabel('del',fontsize=16)
+    cont = ax1.contour(X,Y,array, colors=['white'], linewidths=0.7)
+    map1 = ax1.pcolormesh(X, Y, array, cmap='inferno')
+    ax1.set_xlabel('$\mathregular{\Delta Az_{pix}}$',fontsize=16)
+    ax1.set_ylabel('$\mathregular{\Delta El_{pix}}$',fontsize=16)
     ax1.set_title('with contour',fontsize=18)
     cbar1 = fig.colorbar(map1)
+    cbar1.ax.tick_params(labelsize=12)
     cbar1.set_label('K km/s', fontsize=16)
+    plt.xticks(fontsize=12)
+    plt.yticks(fontsize=12)
 
     ax2 = fig.add_subplot(122)
-    map2 = ax2.pcolormesh(X, Y, array)
-    ax2.set_xlabel('daz',fontsize=16)
-    ax2.set_ylabel('del',fontsize=16)
+    map2 = ax2.pcolormesh(X, Y, array, cmap='inferno')
+    ax2.set_xlabel('$\mathregular{\Delta Az_{pix}}$',fontsize=16)
+    ax2.set_ylabel('$\mathregular{\Delta El_{pix}}$',fontsize=16)
     ax2.set_title('non contour',fontsize=18)
     cbar2 = fig.colorbar(map2)
+    cbar2.ax.tick_params(labelsize=12)
     cbar2.set_label('K km/s', fontsize=16)
+    plt.xticks(fontsize=12)
+    plt.yticks(fontsize=12)
 
     fig.subplots_adjust(wspace=0.3)
     
     if save == True:
-        if law_freq == 'none':
+        if law_ch_num == 'none':
             fig.savefig('Beam pattern.png')
         else:
-            fig.savefig('Beam pattern_freq:' + str(law_freq) + 'to' + str(high_freq) + '.png') 
+            fig.savefig('Beam pattern_ch_num:' + str(law_ch_num) + 'to' + str(high_ch_num) + '.png') 
         print('Save completed')
     else:
         print('Did not save')
 
-def Beam_pattern(path, kisa_param , xFFTS_Data_topics, Num_pix, law_freq='none', high_freq='none', save='False'):
+def Beam_pattern(path, kisa_param , xFFTS_Data_topics, Num_pix, law_ch_num='none', high_ch_num='none', save='False'):
     raw_array = get_data(path, kisa_param , xFFTS_Data_topics)
     ON, OFF, HOT = separate(raw_array)
     calib_array = chopper_wheel(ON, OFF, HOT)
-    TP_array = make_TP_array(calib_array, law_freq, high_freq)
-    pix_array = make_pix_array(TP_array, Num_pix)
+    total_power_array = make_total_power_array(calib_array, law_ch_num, high_ch_num)
+    pix_array = make_pix_array(total_power_array, Num_pix)
     conved_array = convolution(pix_array, Num_pix)
-    make_figure(conved_array, Num_pix, law_freq, high_freq, save)
+    make_figure(conved_array, Num_pix, law_ch_num, high_ch_num, save)
