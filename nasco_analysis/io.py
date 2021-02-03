@@ -114,14 +114,6 @@ class Initial_array(object):
 
         return kisa_applyed_az, kisa_applyed_el
 
-    def ch2velo(self, arg_dict):
-
-        dp = Doppler(arg_dict)
-        velo_list = dp.ch_speed()
-
-        self.velo_list = velo_list
-        return velo_list
-
     def concatenate(self):
 
         data_array = self.data_array
@@ -162,6 +154,17 @@ class Initial_array(object):
         self.concatenated_array = concatenated_array
 
         return concatenated_array
+
+    def ch2velo(self, arg_dict):
+
+        dp = Doppler(arg_dict)
+        velo_list = dp.ch_speed()
+
+        self.velo_list = velo_list
+        self.concatenated_array = self.concatenated_array.assign_coords(
+            vlsr=("spectral_data", velo_list)
+        )
+        return velo_list
 
     def get_lb(self):
 
