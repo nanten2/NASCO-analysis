@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from functools import wraps
+from datetime import datetime
 
 from astropy.coordinates import EarthLocation
 from astropy.coordinates import SkyCoord, CartesianDifferential, LSR
@@ -31,7 +32,7 @@ class Doppler(object):
         Factor of frequency multiplier for 1st local oscilator.
     LO2nd_freq : astropy.units.quantity.Quantity
         Frequency of 2nd local oscilator.
-    obstime : float or astropy.units.quantity.Quantity
+    obstime : float, datetime.datetime or astropy.units.quantity.Quantity
         Time the observation is done. If float value is given, it'll be
         interpreted as UNIX-time.
     ra : astropy.units.quantity.Quantity
@@ -52,10 +53,20 @@ class Doppler(object):
 
     Examples
     --------
-    >>> dp = Doppler(spectrometer='xffts', rest_freq=230.538*u.GHz, LO1st_freq=18.8*u.GHz, LO1st_factor=12, LO2nd_freq=4*u.GHz)
+    >>> dp = Doppler(
+    ...     spectrometer='xffts',
+    ...     rest_freq=230.538*u.GHz,
+    ...     LO1st_freq=18.8*u.GHz,
+    ...     LO1st_factor=12,
+    ...     LO2nd_freq=4*u.GHz
+    ... )
     >>> dp.heterodyne()
     <Quantity 0.938 GHz>
-    >>> args = {'obstime': Time("2020-05-02T09:58:16.962", format="fits"), 'ra': 146.989193 * u.deg, 'dec': 13.278768 * u.deg}
+    >>> args = {
+    ...     'obstime': Time("2020-05-02T09:58:16.962", format="fits"),
+    ...     'ra': 146.989193 * u.deg,
+    ...     'dec': 13.278768 * u.deg
+    ... }
     >>> dp.set_args(args)
     >>> dp.v_obs()
     <Quantity -36.03406182 km / s>
@@ -169,7 +180,13 @@ class Doppler(object):
 
         Examples
         --------
-        >>> dp = Doppler(spectrometer='xffts', rest_freq=115.27*u.GHz, LO1st_freq=17.5*u.GHz, LO1st_factor=6, LO2nd_freq=9.5*u.GHz)
+        >>> dp = Doppler(
+        ...     spectrometer='xffts',
+        ...     rest_freq=115.27*u.GHz,
+        ...     LO1st_freq=17.5*u.GHz,
+        ...     LO1st_factor=6,
+        ...     LO2nd_freq=9.5*u.GHz
+        ... )
         >>> dp.heterodyne()
         <Quantity 0.77 GHz>
 
@@ -199,7 +216,7 @@ class Doppler(object):
     def ch_speed(self):
         """Speed for each channel.
 
-        Calculate recessional velocity relative to V_LSR for each
+        Calculate recessional velocity relative to LSR frame for each
         channel of the spectrometer.
 
         Returns
@@ -215,14 +232,16 @@ class Doppler(object):
 
         Examples
         --------
-        >>> args = {'spectrometer': 'xffts',\
-                    'rest_freq': 115.271204*u.GHz,\
-                    'LO1st_freq': 17.5*u.GHz,\
-                    'LO1st_factor': 6,\
-                    'LO2nd_freq': 9.5*u.GHz,\
-                    'obstime': 1588413496.962337,\
-                    'ra': 146.989193*u.deg,\
-                    'dec': 13.278768 * u.deg}
+        >>> args = {
+        ...     'spectrometer': 'xffts',
+        ...     'rest_freq': 115.271204*u.GHz,
+        ...     'LO1st_freq': 17.5*u.GHz,
+        ...     'LO1st_factor': 6,
+        ...     'LO2nd_freq': 9.5*u.GHz,
+        ...     'obstime': 1588413496.962337,
+        ...     'ra': 146.989193*u.deg,
+        ...     'dec': 13.278768 * u.deg
+        ... }
         >>> dp = Doppler(args)
         >>> dp.ch_speed()
         <Quantity [ 1969.68059067,  1969.52185303,  1969.36311538, ...,
@@ -233,7 +252,7 @@ class Doppler(object):
         speed_resolution = -1 * self.band_width / self.rest_freq / self.ch_num * const.c
         v_0GHz = -1 * speed_resolution * spec_freq \
             / freq_resolution * self.sideband_factor
-        v_base = np.array(range(self.ch_num)) * speed_resolution * self.sideband_factor
+        v_base = np.arange(self.ch_num) * speed_resolution * self.sideband_factor
         v_apparent = v_base + v_0GHz
         v_obs = self.v_obs()
         v_lsr = v_apparent + v_obs
@@ -259,11 +278,17 @@ class Doppler(object):
         Examples
         --------
         >>> obs_time = Time("2020-05-02T09:58:16.962", format="fits")
-        >>> Doppler(obstime=obs_time, ra=146.989193 * u.deg, dec=13.278768 * u.deg).v_obs()
+        >>> Doppler(
+        ...     obstime=obs_time,
+        ...     ra=146.989193 * u.deg,
+        ...     dec=13.278768 * u.deg
+        ... ).v_obs()
         <Quantity -36.03406182 km / s>
-        >>> dp = Doppler(obstime=[1588413496.962337, 1588413500.962337],\
-                         ra=[146.989193 * u.deg, 147.989193 * u.deg],\
-                         dec=[13.278768 * u.deg, 15.278768 * u.deg])
+        >>> dp = Doppler(
+        ...     obstime=[1588413496.962337, 1588413500.962337],
+        ...     ra=[146.989193 * u.deg, 147.989193 * u.deg],
+        ...     dec=[13.278768 * u.deg, 15.278768 * u.deg]
+        ... )
         >>> dp.v_obs()
         <Quantity [-36.03406101, -35.32385628] km / s>
 
@@ -286,7 +311,9 @@ class Doppler(object):
         v_bary = CartesianDifferential(U, V, W)
 
         # set target position
-        if not isinstance(self.obstime, Time):
+        if isinstance(self.obstime, datetime):
+            self.obstime = Time(self.obstime)
+        if not isinstance(self.obstime, Time):  # to interpret both int and float
             self.obstime = Time(self.obstime, format='unix')
         target = SkyCoord(
             ra=self.ra,
