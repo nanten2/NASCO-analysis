@@ -75,9 +75,8 @@ def make_pix_array(array, Num_pix):
         lat = -22.96995611  * u.deg,
         height = 4863.85 * u.m)
     
-    time_unix_list = np.array(array['t'])
-    time_unix_list_astype = Time(time_unix_list, format='datetime64')
-    jupiter_radec_list = co.get_body('Jupiter', time_unix_list_astype)
+    time_astype = Time(np.array(array['t']), format='datetime64')
+    jupiter_radec_list = co.get_body('Jupiter', time_astype)
     jupiter_radec_list.location = nanten2
     jupiter_azel_list = jupiter_radec_list.transform_to(co.AltAz())
     paz = jupiter_azel_list.az.deg - 360
