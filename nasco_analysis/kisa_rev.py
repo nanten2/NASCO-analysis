@@ -42,7 +42,7 @@ def apply_kisa_test(azel, hosei):
         + kisa[4] * np.sin(el)
         + kisa[0] * np.cos(el)
         + kisa[1]
-        + kisa[5] * np.cos(2 * (kisa[3] - az)) * np.sin(el)
+        + kisa[5] * np.cos(2 * (kisa[6] - az)) * np.sin(el)
         + kisa[16]
         + kisa[18] * np.cos(el + kisa[19])
     ) / np.cos(el)
@@ -52,15 +52,15 @@ def apply_kisa_test(azel, hosei):
         - kisa[9] * np.sin(2 * (kisa[10] - az))
         + kisa[15]
         + kisa[11] * el_d
-        + kisa[12] * el_d * el_d
-        + kisa[13] * el_d * el_d * el_d
-        + kisa[14] * el_d * el_d * el_d * el_d
+        + kisa[12] * el_d ** 2
+        + kisa[13] * el_d ** 3
+        + kisa[14] * el_d ** 4
         + kisa[17]
         - kisa[18] * np.sin(el + kisa[19])
         + kisa[20] * el_d
-        + kisa[21] * el_d * el_d
-        + kisa[22] * el_d * el_d * el_d
-        + kisa[23] * el_d * el_d * el_d * el_d
+        + kisa[21] * el_d ** 2
+        + kisa[22] * el_d ** 3
+        + kisa[23] * el_d ** 4
     )
 
     return dx, dy
