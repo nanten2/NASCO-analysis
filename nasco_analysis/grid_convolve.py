@@ -109,7 +109,7 @@ class Array_to_map(Initial_array):
 
         return gridded_list
 
-    def make_otfmap(self):
+    def make_array(self):
         x_grid_number = self.grid[0].shape[0]
         y_grid_number = self.grid[0].shape[1]
 
