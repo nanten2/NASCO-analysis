@@ -7,11 +7,12 @@ from tqdm import tqdm
 
 
 class Array_to_map(Initial_array):
-    def __init__(self, path_to_basefitted_netcdf):
+    def __init__(self, path_to_basefitted_netcdf, path_to_obsfile):
 
         super(Initial_array, self).__init__()
         data = xr.open_dataarray(path_to_basefitted_netcdf)
         self.data = data
+        self.path_to_obsfile = path_to_obsfile
 
     def get_map_center(self):
         f = open(self.path_to_obsfile, "r")
@@ -57,10 +58,13 @@ class Array_to_map(Initial_array):
 
         grid = np.meshgrid(lon_coords, lat_coords)
 
+        self.grid_size = grid_size
         self.grid = grid
         return grid
 
-    def gridding(self, grid, grid_size):
+    def gridding(self):
+
+        grid_size = self.grid_size
 
         if not isinstance(grid_size, Quantity):
             raise (TypeError("grid units must be specified"))
@@ -100,6 +104,17 @@ class Array_to_map(Initial_array):
 
             gridded_list.append(pix_spec_list)
 
-        self.gridded_list = gridded_list
+        gridded_list = np.array(gridded_list)
+        self.gridded_list = np.array(gridded_list)
 
         return gridded_list
+
+    def make_otfmap(self):
+        x_grid_number = self.grid[0].shape[0]
+        y_grid_number = self.grid[0].shape[1]
+
+        otfmap_with_nocoords = self.gridded_list.reshape(
+            y_grid_number, x_grid_number, self.gridded_list[1].shape
+        )
+
+        return otfmap_with_nocoords
