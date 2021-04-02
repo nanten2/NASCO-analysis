@@ -100,6 +100,7 @@ class Initial_array(object):
 
         return data_array, obsmode_array, az_array, el_array
 
+    @staticmethod
     def apply_kisa(self):
 
         d_az, d_el = apply_kisa_test(
@@ -114,7 +115,27 @@ class Initial_array(object):
 
         return kisa_applyed_az, kisa_applyed_el
 
-    def concatenate(self):
+    @staticmethod
+    def apply_collimation_params(self, collimation_params):
+
+        r = collimation_params[0]
+        theta = collimation_params[1]
+        d1 = collimation_params[2]
+        d2 = collimation_params[3]
+        El = self.kisa_applyed_el
+
+        dAz = (r * np.cos(np.deg2rad(theta) - np.deg2rad(El)) + d1) / 3600
+        dEl = (r * np.sin(np.deg2rad(theta) - np.deg2rad(El)) + d2) / 3600
+
+        collimation_applyed_az = self.kisa_applyed_az + dAz
+        collimation_applyed_el = self.kisa_applyed_el + dEl
+
+        self.collimation_applyed_az = collimation_applyed_az
+        self.collimation_applyed_el = collimation_applyed_el
+
+        return collimation_applyed_az, collimation_applyed_el
+
+    def concatenate(self, centre_beam=True):
 
         data_array = self.data_array
 
@@ -141,8 +162,23 @@ class Initial_array(object):
             t=self.data_array["t"], method="pad"
         )
         reindexed_obsmode_array = self.obsmode_array_int.interp_like(self.data_array)
-        reindexed_encoder_az_array = self.kisa_applyed_az.interp_like(self.data_array)
-        reindexed_encoder_el_array = self.kisa_applyed_el.interp_like(self.data_array)
+
+        if centre_beam:
+            reindexed_encoder_az_array = self.kisa_applyed_az.interp_like(
+                self.data_array
+            )
+
+            reindexed_encoder_el_array = self.kisa_applyed_el.interp_like(
+                self.data_array
+            )
+
+        else:
+            reindexed_encoder_az_array = self.collimation_applyed_az.interp_like(
+                self.data_array
+            )
+            reindexed_encoder_el_array = self.collimation_applyed_el.interp_like(
+                self.data_array
+            )
 
         concatenated_array = data_array.assign_coords(
             obsmode=("t", reindexed_obsmode_array),
@@ -155,6 +191,7 @@ class Initial_array(object):
 
         return concatenated_array
 
+    @staticmethod
     def ch2velo(self, arg_dict):
 
         dp = Doppler(arg_dict)

@@ -109,12 +109,21 @@ class Array_to_map(Initial_array):
 
         return gridded_list
 
-    def make_array(self):
+    def make_otf_array(self):
         x_grid_number = self.grid[0].shape[0]
         y_grid_number = self.grid[0].shape[1]
 
         otfmap_with_nocoords = self.gridded_list.reshape(
-            y_grid_number, x_grid_number, self.gridded_list[1].shape
+            y_grid_number, x_grid_number, self.gridded_list[1].shape[0]
         )
 
-        return otfmap_with_nocoords
+        otf_array = xr.DataArray(
+            data=otfmap_with_nocoords,
+            dims=("x", "y", "z"),
+            coords={
+                "x": self.grid[1].T[1],
+                "y": self.grid[0][0],
+                "z": np.arange(32768),
+            },
+        )
+        return otf_array
