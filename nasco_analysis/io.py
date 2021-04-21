@@ -139,7 +139,9 @@ class InitialArray(object):
 
         return az, el
 
-    def correct_collimation_error(self) -> Tuple[xr.DataArray]:
+    def correct_collimation_error(
+        self, collimation_params: Dict[str, float]
+    ) -> Tuple[xr.DataArray]:
         return NotImplemented
 
     def combine_metadata(self, int_obsmode: bool = False) -> xr.DataArray:
