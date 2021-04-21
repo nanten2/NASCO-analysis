@@ -3,12 +3,12 @@
 from functools import wraps
 from datetime import datetime
 
-from astropy.coordinates import EarthLocation
 from astropy.coordinates import SkyCoord, CartesianDifferential, LSR
-from astropy.time import Time
 import astropy.constants as const
+from astropy.time import Time
 import astropy.units as u
 import numpy as np
+import n_const.constants as n2const
 
 
 class Doppler(object):
@@ -72,23 +72,25 @@ class Doppler(object):
     <Quantity -36.03406182 km / s>
 
     """  # noqa: E501
+
     __VARS = [
-        'spectrometer', 'rest_freq', 'LO1st_freq', 'LO1st_factor',
-        'LO2nd_freq', 'obstime', 'ra', 'dec', 'species'
+        "spectrometer",
+        "rest_freq",
+        "LO1st_freq",
+        "LO1st_factor",
+        "LO2nd_freq",
+        "obstime",
+        "ra",
+        "dec",
+        "species",
     ]
-    # observatory location
-    LOC_NANTEN2 = EarthLocation(
-        lon=-67.70308139 * u.deg,
-        lat=-22.96995611 * u.deg,
-        height=4863.85 * u.m,
-    )
     SPECIES_to_REST_FREQ = {
-        '12co_10': 115.271202 * u.GHz,
-        '13co_10': 110.201353 * u.GHz,
-        'c18o_10': 109.782173 * u.GHz,
-        '12co_21': 230.538000 * u.GHz,
-        '13co_21': 220.398681 * u.GHz,
-        'c18o_21': 219.560354 * u.GHz,
+        "12co_10": 115.271202 * u.GHz,
+        "13co_10": 110.201353 * u.GHz,
+        "c18o_10": 109.782173 * u.GHz,
+        "12co_21": 230.538000 * u.GHz,
+        "13co_21": 220.398681 * u.GHz,
+        "c18o_21": 219.560354 * u.GHz,
         # reference: Naomasa Nakai et al. 2009, ISBN978-4-535-60766-8
     }
 
@@ -117,15 +119,16 @@ class Doppler(object):
             if key in self.__VARS:
                 setattr(self, key, val)
             else:
-                raise NameError(f'invalid argument : {key}')
+                raise NameError(f"invalid argument : {key}")
         return
 
     def __species2freq(func):
         @wraps(func)
         def translate(inst, *args):
-            if hasattr(inst, 'species'):
+            if hasattr(inst, "species"):
                 inst.rest_freq = inst.SPECIES_to_REST_FREQ[inst.species.lower()]
             return func(inst, *args)
+
         return translate
 
     def __check_args(self, args):
@@ -150,9 +153,7 @@ class Doppler(object):
             except AttributeError:
                 undeclared.append(arg)
         if undeclared:
-            raise AttributeError(
-                f'Parameter {undeclared} is not given. Use `set_args`'
-            )
+            raise AttributeError(f"Parameter {undeclared} is not given. Use `set_args`")
         return
 
     @__species2freq
@@ -193,18 +194,22 @@ class Doppler(object):
         """  # noqa: E501
         # check if necessary parameters have already been declared
         __vars = [
-            'spectrometer', 'rest_freq', 'LO1st_freq', 'LO1st_factor', 'LO2nd_freq'
+            "spectrometer",
+            "rest_freq",
+            "LO1st_freq",
+            "LO1st_factor",
+            "LO2nd_freq",
         ]
         self.__check_args(__vars)
         # set spectrometer constants
-        if self.spectrometer.lower() == 'xffts':
+        if self.spectrometer.lower() == "xffts":
             self.ch_num = 32768
             self.band_width = 2 * u.GHz
-        elif self.spectrometer.lower() == 'ac240':
+        elif self.spectrometer.lower() == "ac240":
             self.ch_num = 16384
             self.band_width = 1 * u.GHz
         else:
-            raise(ValueError(f"Invalid spectrometer name : {self.spectrometer}"))
+            raise (ValueError(f"Invalid spectrometer name : {self.spectrometer}"))
         # calculate frequency shift
         freq_after1st = self.rest_freq - self.LO1st_freq * self.LO1st_factor
         self.sideband_factor = np.sign(freq_after1st)
@@ -250,13 +255,14 @@ class Doppler(object):
         spec_freq = self.heterodyne()
         freq_resolution = self.band_width / self.ch_num
         speed_resolution = -1 * self.band_width / self.rest_freq / self.ch_num * const.c
-        v_0GHz = -1 * speed_resolution * spec_freq \
-            / freq_resolution * self.sideband_factor
+        v_0GHz = (
+            -1 * speed_resolution * spec_freq / freq_resolution * self.sideband_factor
+        )
         v_base = np.arange(self.ch_num) * speed_resolution * self.sideband_factor
         v_apparent = v_base + v_0GHz
         v_obs = self.v_obs()
-        v_lsr = v_apparent + v_obs
-        return v_lsr.to(u.km/u.s)
+        v_lsr = v_apparent + np.atleast_2d(v_obs).T
+        return v_lsr.to(u.km / u.s)
 
     def v_obs(self):
         """Observer's verocity relative to LSR.
@@ -294,7 +300,7 @@ class Doppler(object):
 
         """  # noqa: E501
         # check if necessary parameters have already been declared
-        __vars = ['obstime', 'ra', 'dec']
+        __vars = ["obstime", "ra", "dec"]
         self.__check_args(__vars)
 
         # galactic rotation parameter (solar motion)
@@ -303,7 +309,7 @@ class Doppler(object):
             ra=18 * 15 * u.deg,
             dec=30 * u.deg,
             frame="fk4",
-            equinox=Time('B1900'),
+            equinox=Time("B1900"),
         ).galactic
         U = v_sun * np.cos(dir_sun.b) * np.cos(dir_sun.l)
         V = v_sun * np.cos(dir_sun.b) * np.sin(dir_sun.l)
@@ -311,32 +317,35 @@ class Doppler(object):
         v_bary = CartesianDifferential(U, V, W)
 
         # set target position
-        if isinstance(self.obstime, datetime):
+        obstime_repr = list(np.array(self.obstime))[0]
+        if isinstance(obstime_repr, (datetime, np.datetime64)):
             self.obstime = Time(self.obstime)
-        if not isinstance(self.obstime, Time):  # to interpret both int and float
-            self.obstime = Time(self.obstime, format='unix')
+        if not isinstance(obstime_repr, Time):  # to catch both int and float
+            self.obstime = Time(self.obstime, format="unix")
         target = SkyCoord(
             ra=self.ra,
             dec=self.dec,
             frame="fk5",
             obstime=self.obstime,
-            location=self.LOC_NANTEN2,
+            location=n2const.LOC_NANTEN2,
         )
 
         # calculate V_obs
-        v_obs = SkyCoord(
-            self.LOC_NANTEN2.get_gcrs(self.obstime)
-        ).transform_to(
-            LSR(v_bary=v_bary)
-        ).velocity
+        v_obs = (
+            SkyCoord(n2const.LOC_NANTEN2.get_gcrs(self.obstime))
+            .transform_to(LSR(v_bary=v_bary))
+            .velocity
+        )
 
         # normal component of V_obs to stellar body
-        v_correction = v_obs.d_x * np.cos(target.icrs.dec) * np.cos(target.icrs.ra) + \
-            v_obs.d_y * np.cos(target.icrs.dec) * np.sin(target.icrs.ra) + \
-            v_obs.d_z * np.sin(target.icrs.dec)
+        v_correction = (
+            v_obs.d_x * np.cos(target.icrs.dec) * np.cos(target.icrs.ra)
+            + v_obs.d_y * np.cos(target.icrs.dec) * np.sin(target.icrs.ra)
+            + v_obs.d_z * np.sin(target.icrs.dec)
+        )
 
         return v_correction
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pass
