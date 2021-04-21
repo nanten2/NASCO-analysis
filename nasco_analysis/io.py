@@ -117,7 +117,7 @@ class InitialArray(object):
             )
         return self.data_set
 
-    def correct_kisa(self) -> Tuple[np.ndarray]:
+    def correct_kisa(self) -> Tuple[xr.DataArray]:
         if self.kisa_path is None:
             self.encoder_set = self.encoder_set.rename(
                 {"enc_az": "az", "enc_el": "el"}
@@ -138,6 +138,9 @@ class InitialArray(object):
         ).assign_attrs({"kisa_applied": True})
 
         return az, el
+
+    def correct_collimation_error(self) -> Tuple[xr.DataArray]:
+        return NotImplemented
 
     def combine_metadata(self, int_obsmode: bool = False) -> xr.DataArray:
         self.correct_kisa()
