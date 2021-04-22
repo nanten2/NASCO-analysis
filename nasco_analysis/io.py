@@ -320,8 +320,8 @@ class Initial_array(InitialArray):
         # variable mappings
         self.data_array = self.data_set.spec
         self.obsmode_array = self.obsmode_set.obs_mode
-        self.az_array = self.enc_set.enc_az
-        self.el_array = self.enc_set.enc_el
+        self.az_array = self.encoder_set.enc_az
+        self.el_array = self.encoder_set.enc_el
 
         return (self.data_array, self.obsmode_array, self.az_array, self.el_array)
 
@@ -330,8 +330,8 @@ class Initial_array(InitialArray):
         # variable mappings
         self.data_array = self.data_set.total_power
         self.obsmode_array = self.obsmode_set.obs_mode
-        self.az_array = self.enc_set.enc_az
-        self.el_array = self.enc_set.enc_el
+        self.az_array = self.encoder_set.enc_az
+        self.el_array = self.encoder_set.enc_el
 
         return (self.data_array, self.obsmode_array, self.az_array, self.el_array)
 
