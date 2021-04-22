@@ -214,8 +214,6 @@ class InitialArray(object):
             'LO1st_factor', 'LO2nd_freq'] should be given as dict args
             or kwargs.
         """
-        if not isinstance(args, dict):
-            raise TypeError("Args must be given as dict.")
         if "spec" not in self.data_set.keys():
             raise ValueError(
                 "Spectral data not found."
