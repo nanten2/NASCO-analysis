@@ -316,7 +316,7 @@ class Initial_array(InitialArray):
         self.path_to_kisa_param = self.kisa_path
 
     def get_data_array(self):
-        self.create_spec_array()
+        self.create_data_array()
         # variable mappings
         self.data_array = self.data_set.spec
         self.obsmode_array = self.obsmode_set.obs_mode
