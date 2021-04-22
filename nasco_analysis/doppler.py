@@ -24,12 +24,12 @@ class Doppler(object):
     rest_freq : astropy.units.quantity.Quantity
         Rest frequency of the line spectrum to be evaluated.
     species : str
-        Name of the observed species; only CO isotopes (12CO_10,
-        13CO_10, C18O_10, 12CO_21, 13CO_21, C18O_21) are supported.
+        Name of the observed species; only CO isotopes (J10_12CO,
+        J10_13CO, J10_C18O, J21_12CO, J21_13CO, J21_C18O) are supported.
     LO1st_freq : astropy.units.quantity.Quantity
-        Frequency of 1st local oscilator.
+        Frequency of 1st local oscillator.
     LO1st_factor : int or float
-        Factor of frequency multiplier for 1st local oscilator.
+        Factor of frequency multiplier for 1st local oscillator.
     LO2nd_freq : astropy.units.quantity.Quantity
         Frequency of 2nd local oscilator.
     obstime : float, datetime.datetime or astropy.units.quantity.Quantity
@@ -84,15 +84,6 @@ class Doppler(object):
         "dec",
         "species",
     ]
-    SPECIES_to_REST_FREQ = {
-        "12co_10": 115.271202 * u.GHz,
-        "13co_10": 110.201353 * u.GHz,
-        "c18o_10": 109.782173 * u.GHz,
-        "12co_21": 230.538000 * u.GHz,
-        "13co_21": 220.398681 * u.GHz,
-        "c18o_21": 219.560354 * u.GHz,
-        # reference: Naomasa Nakai et al. 2009, ISBN978-4-535-60766-8
-    }
 
     def __init__(self, args=None, **kwargs):
         # set instance variables
@@ -126,14 +117,13 @@ class Doppler(object):
         @wraps(func)
         def translate(inst, *args):
             if hasattr(inst, "species"):
-                inst.rest_freq = inst.SPECIES_to_REST_FREQ[inst.species.lower()]
+                inst.rest_freq = n2const.REST_FREQ[inst.species.lower()]
             return func(inst, *args)
 
         return translate
 
     def __check_args(self, args):
         """
-
         Check if the parameters needed to run function are declared.
 
         Parameters
@@ -144,7 +134,6 @@ class Doppler(object):
         ------
         AttributeError
             When undeclared parameter exists.
-
         """
         undeclared = []
         for arg in args:
