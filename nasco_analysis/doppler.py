@@ -192,11 +192,11 @@ class Doppler(object):
         self.__check_args(__vars)
         # set spectrometer constants
         if self.spectrometer.lower() == "xffts":
-            self.ch_num = 32768
-            self.band_width = 2 * u.GHz
+            self.ch_num = n2const.XFFTS.ch_num
+            self.band_width = n2const.XFFTS.bandwidth
         elif self.spectrometer.lower() == "ac240":
-            self.ch_num = 16384
-            self.band_width = 1 * u.GHz
+            self.ch_num = n2const.AC240.ch_num
+            self.band_width = n2const.AC240.bandwidth
         else:
             raise (ValueError(f"Invalid spectrometer name : {self.spectrometer}"))
         # calculate frequency shift
