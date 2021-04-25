@@ -171,7 +171,7 @@ class InitialArray(object):
         reindexed_obsmode_set = reindexed_obsmode_set.where(
             reindexed_obsmode_set
             == self.obsmode_set.reindex_like(self.data_set, method="bfill"),
-            b"None",
+            # b"None",
         )
         reindexed_encoder_set = self.encoder_set.interp_like(
             self.data_set, method="linear"
@@ -217,7 +217,7 @@ class InitialArray(object):
         if "spec" not in self.data_set.keys():
             raise ValueError(
                 "Spectral data not found."
-                "Cannot calculate doppler velocity to total power data."
+                "Cannot calculate doppler velocity on total power data."
             )
 
         kwargs.update(
@@ -237,12 +237,14 @@ class InitialArray(object):
         location = n2const.LOC_NANTEN2
 
         horizontal_coord = SkyCoord(
-            az=self.data.az,
-            alt=self.data.el,
+            az=self.data.az.data * u.deg,
+            alt=self.data.el.data * u.deg,
             frame=AltAz,
             obstime=self.data.t,
             location=location,
-            unit="deg",
+            pressure=self.data.press.data * u.hPa,
+            temperature=self.data.out_temp.data * u.deg_C,
+            relative_humidity=self.data.out_humi.data * u.percent,
         )
         equatorial_coord = horizontal_coord.transform_to(FK5)
         galactic_coord = equatorial_coord.transform_to(Galactic)
@@ -251,7 +253,7 @@ class InitialArray(object):
             ra=("t", equatorial_coord.ra),
             dec=("t", equatorial_coord.dec),
             l=("t", galactic_coord.l),
-            b=("t", galactic_coord.l),
+            b=("t", galactic_coord.b),
         )
         return self.data
 
