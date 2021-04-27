@@ -243,11 +243,9 @@ class Doppler(object):
         """
         spec_freq = self.heterodyne()
         freq_resolution = self.band_width / self.ch_num
-        speed_resolution = -1 * self.band_width / self.rest_freq / self.ch_num * const.c
-        v_0GHz = (
-            -1 * speed_resolution * spec_freq / freq_resolution * self.sideband_factor
-        )
-        v_base = np.arange(self.ch_num) * speed_resolution * self.sideband_factor
+        speed_resolution = self.band_width / self.rest_freq / self.ch_num * const.c
+        v_0GHz = speed_resolution * spec_freq / freq_resolution * self.sideband_factor
+        v_base = -1 * np.arange(self.ch_num) * speed_resolution * self.sideband_factor
         v_apparent = v_base + v_0GHz
         v_obs = self.v_obs()
         v_lsr = v_apparent + np.atleast_2d(v_obs).T
