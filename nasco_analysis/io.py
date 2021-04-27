@@ -83,7 +83,7 @@ class InitialArray(object):
         data["timestamp"] = timestamp2datetime(data["timestamp"].astype(float))
         obsmode["received_time"] = timestamp2datetime(
             obsmode["received_time"].astype(float)
-        )
+        )  # no timestamp recorded
         encoder["timestamp"] = timestamp2datetime(encoder["timestamp"].astype(float))
         weather["timestamp"] = timestamp2datetime(weather["timestamp"].astype(float))
 
@@ -126,12 +126,12 @@ class InitialArray(object):
         enc_az_array = self.encoder_set.enc_az
         enc_el_array = self.encoder_set.enc_el
 
-        d_az, d_el = apply_kisa_test(
+        dAz, dEl = apply_kisa_test(
             azel=(enc_az_array, enc_el_array), hosei=self.kisa_path
         )
 
-        az = enc_az_array + d_az / 3600
-        el = enc_el_array + d_el / 3600
+        az = enc_az_array + dAz / 3600
+        el = enc_el_array + dEl / 3600
 
         self.encoder_set = self.encoder_set.assign(
             az=("t", az), el=("t", el)
@@ -140,9 +140,33 @@ class InitialArray(object):
         return az, el
 
     def correct_collimation_error(
-        self, collimation_params: Dict[str, float]
+        self, collimation_params: Dict[str, float] = None
     ) -> Tuple[xr.DataArray]:
-        return NotImplemented
+        self.correct_kisa()
+        if collimation_params is None:
+            self.encoder_set = self.encoder_set.assign_attrs(
+                {"collimation_applied": False}
+            )
+            return
+
+        # specify the beam by self.topic_name using newly defined Constants?
+
+        r = collimation_params.r  # arcsec
+        theta = np.deg2rad(collimation_params.theta)
+        d1 = collimation_params.d1  # arcsec
+        d2 = collimation_params.d2  # arcsec
+        el = np.deg2rad(self.data.el)
+
+        dAz = (r * np.cos(theta - el) + d1) / 3600  # deg
+        dEl = (r * np.sin(theta - el) + d2) / 3600  # deg
+
+        az = self.encoder_set.az + dAz
+        el = self.encoder_set.el + dEl
+
+        self.encoder_set = self.encoder_set.assign(
+            az=("t", az), el=("t", el)
+        ).assign_attrs({"collimation_applied": True})
+        return
 
     def combine_metadata(self, int_obsmode: bool = False) -> xr.DataArray:
         self.correct_kisa()
@@ -228,23 +252,22 @@ class InitialArray(object):
             }
         )
         dp = Doppler(args=args, **kwargs)
-        self.velocity = dp.ch_speed()
+        velocity = dp.ch_speed()
 
-        self.data = self.data.assign_coords(v_lsr=(["t", "spectra"], self.velocity))
+        self.data = self.data.assign_coords(v_lsr=(["t", "spectra"], velocity))
         return self.data
 
     def convert_coordinates(self) -> xr.DataArray:
-        location = n2const.LOC_NANTEN2
-
         horizontal_coord = SkyCoord(
             az=self.data.az.data * u.deg,
             alt=self.data.el.data * u.deg,
             frame=AltAz,
             obstime=self.data.t,
-            location=location,
+            location=n2const.LOC_NANTEN2,
             pressure=self.data.press.data * u.hPa,
             temperature=self.data.out_temp.data * u.deg_C,
             relative_humidity=self.data.out_humi.data * u.percent,
+            # refraction have almost no dependency on wavelength at RADIO frequency
         )
         equatorial_coord = horizontal_coord.transform_to(FK5)
         galactic_coord = equatorial_coord.transform_to(Galactic)
@@ -353,7 +376,7 @@ class Initial_array(InitialArray):
     def ch2velo(self, arg_dict):
         self.channel2velocity(arg_dict)
         # variable mapping
-        self.velo_list = self.velocity
+        self.velo_list = self.data.v_lsr
         self.concatenated_array = self.data
 
         return self.velo_list
