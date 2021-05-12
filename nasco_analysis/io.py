@@ -142,6 +142,13 @@ class InitialArray(object):
     def correct_collimation_error(
         self, collimation_params: Dict[str, float] = None
     ) -> Tuple[xr.DataArray]:
+        """
+        Examples
+        --------
+        >>> from n_const.constants import Constants
+        >>> params = Constants.set_values(r=300, theta=80, d1=-10, d2=35)
+        >>> InitialArray(...).correct_collimation_error(params)
+        """
         self.correct_kisa()
         if collimation_params is None:
             self.encoder_set = self.encoder_set.assign_attrs(
@@ -168,8 +175,22 @@ class InitialArray(object):
         ).assign_attrs({"collimation_applied": True})
         return
 
-    def combine_metadata(self, int_obsmode: bool = False) -> xr.DataArray:
-        self.correct_kisa()
+    def combine_metadata(
+        self,
+        collimation_params: Optional[n2const.Constants] = None,
+        int_obsmode: bool = False,
+    ) -> xr.DataArray:
+        """
+        Notes
+        -----
+        TODO: remove collimation_params and add self.corrim_path,
+        determine beam using n2const.BOARD2BEAM[self.topic_name]
+        """
+
+        if collimation_params:
+            self.correct_collimation_error(collimation_params)
+        else:
+            self.correct_kisa()
 
         if int_obsmode:
 
@@ -267,7 +288,7 @@ class InitialArray(object):
             pressure=self.data.press.data * u.hPa,
             temperature=self.data.out_temp.data * u.deg_C,
             relative_humidity=self.data.out_humi.data * u.percent,
-            # refraction have almost no dependency on wavelength at RADIO frequency
+            # refraction have almost no dependency on obs_wl at RADIO frequency
         )
         equatorial_coord = horizontal_coord.transform_to(FK5)
         galactic_coord = equatorial_coord.transform_to(Galactic)
@@ -290,6 +311,16 @@ def get_spectral_data(
     **kwargs: Optional[Any]
 ) -> xr.DataArray:
     """
+    Parameters
+    ----------
+    data_path: PathLike
+    topic_name: str
+    kisa_path: PathLike
+    trans_coord: bool
+    args: dict
+    **kwargs: Any
+        kwargs for doppler.Doppler class
+
     Notes
     -----
     Wall time:
@@ -375,7 +406,7 @@ class Initial_array(InitialArray):
 
     def ch2velo(self, arg_dict):
         self.channel2velocity(arg_dict)
-        # variable mapping
+        # variable mappings
         self.velo_list = self.data.v_lsr
         self.concatenated_array = self.data
 
