@@ -187,10 +187,7 @@ class InitialArray(object):
         determine beam using n2const.BOARD2BEAM[self.topic_name]
         """
 
-        if collimation_params:
-            self.correct_collimation_error(collimation_params)
-        else:
-            self.correct_kisa()
+        self.correct_collimation_error(collimation_params)  # kisa correction also done
 
         if int_obsmode:
 
@@ -306,9 +303,10 @@ def get_spectral_data(
     data_path: PathLike,
     topic_name: str,
     kisa_path: Optional[PathLike] = None,
+    collimation_params: Optional[n2const.Constants] = None,
     trans_coord: Optional[bool] = False,
     args: Optional[dict] = None,
-    **kwargs: Optional[Any]
+    **kwargs: Optional[Any],
 ) -> xr.DataArray:
     """
     Parameters
@@ -329,7 +327,9 @@ def get_spectral_data(
     """
     ia = InitialArray(data_path, topic_name, kisa_path)
     ia.create_data_array()
-    ret = ia.combine_metadata()  # kisa correction implicitly done here
+    ret = ia.combine_metadata(
+        collimation_params=collimation_params
+    )  # kisa correction implicitly done here
     if not trans_coord:
         return ret
     ret = ia.convert_coordinates()
@@ -342,6 +342,7 @@ def get_totalpower_data(
     data_path: PathLike,
     topic_name: str,
     kisa_path: Optional[PathLike] = None,
+    collimation_params: Optional[n2const.Constants] = None,
     trans_coord: Optional[bool] = False,
 ) -> xr.DataArray:
     """
@@ -353,7 +354,9 @@ def get_totalpower_data(
     """
     ia = InitialArray(data_path, topic_name, kisa_path)
     ia.create_tp_array()
-    ret = ia.combine_metadata()  # kisa correction implicitly done here
+    ret = ia.combine_metadata(
+        collimation_params=collimation_params
+    )  # kisa correction implicitly done here
     if not trans_coord:
         return ret
     return ia.convert_coordinates()
