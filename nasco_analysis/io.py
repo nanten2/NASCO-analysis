@@ -240,10 +240,25 @@ class InitialArray(object):
         for key in reindexed_weather_set.keys():
             coords[key] = ("t", reindexed_weather_set[key])
 
+        unit = {
+            "in_humi": "percent",
+            "out_humi": "percent",
+            "wind_sp": "m/s",
+            "wind_dir": "deg",
+            "press": "hPa",
+            "rain": "mm",
+            "v_lsr": "km/s",
+        }
+        unit.update(dict.fromkeys(["in_temp", "out_temp"], "K"))
+        unit.update(dict.fromkeys(["cabin_temp1", "cabin_temp2"], "K"))
+        unit.update(dict.fromkeys(["dome_temp1", "dome_temp2"], "K"))
+        unit.update(dict.fromkeys(["gen_temp1", "gen_temp2"], "K"))
+        unit.update(dict.fromkeys(["az", "el", "ra", "dec", "l", "b"], "deg"))
+
         self.data = (
             self.data_set[main_data_field]
             .assign_coords(coords)
-            .assign_attrs(self.encoder_set.attrs)
+            .assign_attrs(self.encoder_set.attrs, unit=unit)
         )
         return self.data
 
