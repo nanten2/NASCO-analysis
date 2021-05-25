@@ -140,7 +140,7 @@ class InitialArray(object):
         return az, el
 
     def correct_collimation_error(
-        self, collimation_params: Dict[str, float] = None
+        self, collimation_params: n2const.Constants = None
     ) -> Tuple[xr.DataArray]:
         """
         Examples
@@ -164,7 +164,8 @@ class InitialArray(object):
         d2 = collimation_params.d2  # arcsec
         el = np.deg2rad(self.data.el)
 
-        dAz = (r * np.cos(theta - el) + d1) / 3600  # deg
+        dx = (r * np.cos(theta - el) + d1) / 3600  # deg
+        dAz = dx / np.cos(el)  # deg
         dEl = (r * np.sin(theta - el) + d2) / 3600  # deg
 
         az = self.encoder_set.az + dAz
@@ -173,7 +174,7 @@ class InitialArray(object):
         self.encoder_set = self.encoder_set.assign(
             az=("t", az), el=("t", el)
         ).assign_attrs({"collimation_applied": True})
-        return
+        return az, el
 
     def combine_metadata(
         self,
